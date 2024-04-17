@@ -2,6 +2,8 @@ import { MongoClient } from 'mongodb';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ParsedQs } from 'qs';
 
+export const maxDuration = 900;
+
 const port = process.env.PORT;
 
 const API_URI = process.env.MONGODB_URI as string;
@@ -71,12 +73,16 @@ async function run() {
 export async function GET(request: NextRequest) {
   const rsvpCode = request.nextUrl.searchParams.get('rsvpCode');
 
-  if (!rsvpCode) {
-    return new NextResponse('No code provided', { status: 400 });
-  }
+  // if (!rsvpCode) {
+  //   return new NextResponse('No code provided', { status: 400 });
+  // }
 
   // const rsvp = await retrieveRSVP(rsvpCode);
-  await run();
+  try {
+    await run();
+  } catch (error) {
+    return new NextResponse('error', { status: 599 });
+  }
 
   return new Response('rsvp', {
     headers: {
