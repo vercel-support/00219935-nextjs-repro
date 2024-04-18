@@ -10,12 +10,16 @@ const port = process.env.PORT;
 const API_URI = process.env.MONGODB_URI as string;
 const dbClient = new MongoClient(API_URI);
 
-const database = dbClient.db();
-const commentsCollection = database.collection('comments');
-
-const retrieveComments = async () => {
+const retrieveComments = async (client: MongoClient) => {
   try {
-    const comments = await commentsCollection.find().toArray();
+    const database = client.db();
+    const commentsCollection = database.collection('comments');
+    const comments = await commentsCollection
+      .find({
+        $where:
+          'this.date > new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 7)',
+      })
+      .toArray();
 
     return JSON.stringify(comments);
   } catch (error) {
@@ -41,11 +45,19 @@ async function run() {
   }
 }
 
+async function listDatabases(client: MongoClient) {
+  const databasesList = await client.db().admin().listDatabases();
+
+  return databasesList.databases;
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const comments = await retrieveComments();
+    await dbClient.connect();
+    // const comments = await retrieveComments(dbClient);
+    const dbs = await listDatabases(dbClient);
     // await run();
-    return NextResponse.json(comments);
+    return NextResponse.json(dbs);
   } catch (error) {
     return new NextResponse('error', { status: 599 });
   }
