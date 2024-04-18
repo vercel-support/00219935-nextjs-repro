@@ -10,43 +10,13 @@ const API_URI = process.env.MONGODB_URI as string;
 const dbClient = new MongoClient(API_URI);
 
 const database = dbClient.db('Cluster0');
-const invites = database.collection('invites');
+const commentsCollection = database.collection('comments');
 
-const retrieveRSVP = async (
-  rsvpCode: string | ParsedQs | string[] | ParsedQs[]
-) => {
+const retrieveComments = async () => {
   try {
-    const query = {
-      code: rsvpCode,
-    };
+    const comments = await commentsCollection.find().toArray();
 
-    const rsvp = await invites.findOne(query);
-
-    return JSON.stringify(rsvp);
-  } catch (error) {
-    console.log(error);
-    return 'error';
-  }
-};
-
-const submitRSVP = async (
-  rsvpCode: string | ParsedQs | string[] | ParsedQs[],
-  rsvpResponse: boolean | string | ParsedQs | string[] | ParsedQs[]
-) => {
-  try {
-    const query = {
-      code: rsvpCode,
-    };
-
-    const response = {
-      $set: {
-        attending: rsvpResponse,
-      },
-    };
-
-    const databaseResponse = await invites.updateOne(query, response);
-
-    return databaseResponse;
+    return JSON.stringify(comments);
   } catch (error) {
     console.log(error);
     return 'error';
@@ -71,22 +41,11 @@ async function run() {
 }
 
 export async function GET(request: NextRequest) {
-  const rsvpCode = request.nextUrl.searchParams.get('rsvpCode');
-
-  // if (!rsvpCode) {
-  //   return new NextResponse('No code provided', { status: 400 });
-  // }
-
-  // const rsvp = await retrieveRSVP(rsvpCode);
   try {
-    await run();
+    const comments = await retrieveComments();
+    // await run();
+    return NextResponse.json(comments);
   } catch (error) {
     return new NextResponse('error', { status: 599 });
   }
-
-  return new Response('rsvp', {
-    headers: {
-      'content-type': 'application/json',
-    },
-  });
 }
