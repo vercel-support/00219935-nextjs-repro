@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ParsedQs } from 'qs';
 
 export const maxDuration = 900;
+export const dynamic = 'force-dynamic';
 
 const port = process.env.PORT;
 
