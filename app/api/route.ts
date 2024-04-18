@@ -9,7 +9,7 @@ const port = process.env.PORT;
 const API_URI = process.env.MONGODB_URI as string;
 const dbClient = new MongoClient(API_URI);
 
-const database = dbClient.db('Cluster0');
+const database = dbClient.db();
 const commentsCollection = database.collection('comments');
 
 const retrieveComments = async () => {
