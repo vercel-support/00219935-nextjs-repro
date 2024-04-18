@@ -12,13 +12,10 @@ const dbClient = new MongoClient(API_URI);
 
 const retrieveComments = async (client: MongoClient) => {
   try {
-    const database = client.db();
+    const database = client.db('sample_mflix');
     const commentsCollection = database.collection('comments');
     const comments = await commentsCollection
-      .find({
-        $where:
-          'this.date > new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 7)',
-      })
+      .find()
       .toArray();
 
     return JSON.stringify(comments);
@@ -54,10 +51,10 @@ async function listDatabases(client: MongoClient) {
 export async function GET(request: NextRequest) {
   try {
     await dbClient.connect();
-    // const comments = await retrieveComments(dbClient);
-    const dbs = await listDatabases(dbClient);
+    const comments = await retrieveComments(dbClient);
+    // const dbs = await listDatabases(dbClient);
     // await run();
-    return NextResponse.json(dbs);
+    return NextResponse.json(comments);
   } catch (error) {
     return new NextResponse('error', { status: 599 });
   }
